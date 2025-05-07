@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 /**
  * ProviderResults component for displaying service provider recommendations
@@ -127,8 +127,13 @@ function ProviderResults({ providers, loading, error }) {
                       {renderStars(provider.rating)}
                     </div>
                     <span className="text-sm text-gray-500">
-                      {provider.rating.toFixed(1)}
+                      {provider.rating ? provider.rating.toFixed(1) : 'N/A'}
                     </span>
+                    {provider.reviews_count && (
+                      <span className="text-xs text-gray-500 ml-2">
+                        ({provider.reviews_count} reviews)
+                      </span>
+                    )}
                   </div>
                   
                   <div className="flex items-center text-gray-600 mb-1">
@@ -138,29 +143,162 @@ function ProviderResults({ providers, loading, error }) {
                     <span className="text-sm capitalize">{provider.service_type}</span>
                   </div>
                   
-                  <div className="flex items-center text-gray-600">
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  {/* Address information */}
+                  <div className="flex items-start text-gray-600 mb-1">
+                    <svg className="w-4 h-4 mr-1 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     </svg>
-                    <span className="text-sm capitalize">{provider.neighborhood}</span>
+                    <div>
+                      <span className="text-sm capitalize block">{provider.neighborhood}</span>
+                      {provider.street && (
+                        <span className="text-xs text-gray-500 block">{provider.street}</span>
+                      )}
+                      {provider.postal_code && (
+                        <span className="text-xs text-gray-500 block">{provider.postal_code}</span>
+                      )}
+                    </div>
                   </div>
+                  
+                  {/* Review distribution */}
+                  {provider.review_distribution && (
+                    <div className="mt-2">
+                      <div className="text-xs text-gray-500 mb-1">Review Distribution:</div>
+                      <div className="flex items-center mb-1">
+                        <div className="w-20 text-xs">5★</div>
+                        <div className="flex-1 bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-green-500 h-2 rounded-full" 
+                            style={{ width: `${provider.review_distribution.fiveStar ? (provider.review_distribution.fiveStar / provider.reviews_count * 100) : 0}%` }}
+                          ></div>
+                        </div>
+                        <div className="w-8 text-xs text-right">{provider.review_distribution.fiveStar || 0}</div>
+                      </div>
+                      <div className="flex items-center mb-1">
+                        <div className="w-20 text-xs">4★</div>
+                        <div className="flex-1 bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-green-400 h-2 rounded-full" 
+                            style={{ width: `${provider.review_distribution.fourStar ? (provider.review_distribution.fourStar / provider.reviews_count * 100) : 0}%` }}
+                          ></div>
+                        </div>
+                        <div className="w-8 text-xs text-right">{provider.review_distribution.fourStar || 0}</div>
+                      </div>
+                      <div className="flex items-center mb-1">
+                        <div className="w-20 text-xs">3★</div>
+                        <div className="flex-1 bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-yellow-400 h-2 rounded-full" 
+                            style={{ width: `${provider.review_distribution.threeStar ? (provider.review_distribution.threeStar / provider.reviews_count * 100) : 0}%` }}
+                          ></div>
+                        </div>
+                        <div className="w-8 text-xs text-right">{provider.review_distribution.threeStar || 0}</div>
+                      </div>
+                      <div className="flex items-center mb-1">
+                        <div className="w-20 text-xs">2★</div>
+                        <div className="flex-1 bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-yellow-500 h-2 rounded-full" 
+                            style={{ width: `${provider.review_distribution.twoStar ? (provider.review_distribution.twoStar / provider.reviews_count * 100) : 0}%` }}
+                          ></div>
+                        </div>
+                        <div className="w-8 text-xs text-right">{provider.review_distribution.twoStar || 0}</div>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="w-20 text-xs">1★</div>
+                        <div className="flex-1 bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-red-500 h-2 rounded-full" 
+                            style={{ width: `${provider.review_distribution.oneStar ? (provider.review_distribution.oneStar / provider.reviews_count * 100) : 0}%` }}
+                          ></div>
+                        </div>
+                        <div className="w-8 text-xs text-right">{provider.review_distribution.oneStar || 0}</div>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 {/* Right Column */}
-                <div className="flex flex-col justify-center">
-                  <div className="flex items-center mb-2">
-                    <svg className="w-4 h-4 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                    </svg>
-                    <span className="text-sm font-medium">{provider.contact}</span>
+                <div className="flex flex-col justify-start">
+                  {/* Contact Information */}
+                  <div className="mb-3">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-2">Contact Information</h4>
+                    
+                    {provider.full_phone && (
+                      <div className="flex items-center mb-2">
+                        <svg className="w-4 h-4 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                        </svg>
+                        <a href={`tel:${provider.full_phone}`} className="text-sm font-medium text-blue-600 hover:underline">
+                          {provider.full_phone}
+                        </a>
+                      </div>
+                    )}
+                    
+                    {provider.email && (
+                      <div className="flex items-center mb-2">
+                        <svg className="w-4 h-4 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        <a href={`mailto:${provider.email}`} className="text-sm font-medium text-blue-600 hover:underline">
+                          {provider.email}
+                        </a>
+                      </div>
+                    )}
+                    
+                    {provider.website && (
+                      <div className="flex items-center mb-2">
+                        <svg className="w-4 h-4 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+                        </svg>
+                        <a href={provider.website} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-blue-600 hover:underline">
+                          Visit Website
+                        </a>
+                      </div>
+                    )}
                   </div>
                   
-                  <button className="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    Contact Provider
-                  </button>
+                  {/* Action Buttons */}
+                  <div className="mt-auto">
+                    <a 
+                      href={`tel:${provider.full_phone}`} 
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 block text-center mb-2"
+                    >
+                      Contact Provider
+                    </a>
+                    
+                    <a 
+                      href={`/booking?provider=${encodeURIComponent(provider.name)}&service=${encodeURIComponent(provider.service_type)}&phone=${encodeURIComponent(provider.full_phone || '')}&email=${encodeURIComponent(provider.email || '')}`} 
+                      className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 block text-center"
+                    >
+                      Make Booking
+                    </a>
+                  </div>
                 </div>
               </div>
+              
+              {/* Reviews Section */}
+              {provider.reviews && provider.reviews.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Customer Reviews</h4>
+                  <div className="space-y-3">
+                    {provider.reviews.slice(0, 5).map((review, index) => (
+                      <div key={index} className="bg-gray-50 p-3 rounded-md">
+                        <div className="flex justify-between items-start mb-1">
+                          <span className="text-sm font-medium text-gray-700">{review.reviewer}</span>
+                          <div className="flex items-center">
+                            <div className="flex mr-1">
+                              {renderStars(review.rating)}
+                            </div>
+                            <span className="text-xs text-gray-500">{review.date}</span>
+                          </div>
+                        </div>
+                        <p className="text-sm text-gray-600">{review.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         ))}

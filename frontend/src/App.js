@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './App.css';
 import SearchForm from './components/SearchForm';
 import SearchMessage from './components/SearchMessage';
 import ProviderResults from './components/ProviderResults';
+import BookingForm from './components/BookingForm';
 
-function App() {
+// Home page component
+function Home() {
   // State hooks for form inputs
   const [service, setService] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
@@ -74,17 +77,6 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      {/* Header */}
-      <header className="bg-blue-600 shadow-md">
-        <div className="max-w-5xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-white text-center">
-            Neighbourhood Pro Finder
-          </h1>
-          <p className="text-blue-100 text-center mt-2 max-w-2xl mx-auto">
-            Find trusted professionals in your area based on neighborhood recommendations and AI-powered ranking
-          </p>
-        </div>
-      </header>
       
       {/* Main Content */}
       <main className="max-w-5xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
@@ -164,15 +156,45 @@ function App() {
         </div>
       </main>
       
-      {/* Footer */}
-      <footer className="bg-gray-800 mt-12">
-        <div className="max-w-5xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <p className="text-center text-gray-300 text-sm">
-            {new Date().getFullYear()} Neighbourhood Pro Finder • AI-Powered Local Service Recommendations
-          </p>
-        </div>
-      </footer>
     </div>
+  );
+}
+
+// Main App component with routing
+function App() {
+  return (
+    <Router>
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+        {/* Header */}
+        <header className="bg-blue-600 shadow-md">
+          <div className="max-w-5xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+            <Link to="/" className="text-white hover:text-blue-100">
+              <h1 className="text-3xl font-bold text-white text-center">
+                Neighbourhood Pro Finder
+              </h1>
+            </Link>
+            <p className="text-blue-100 text-center mt-2 max-w-2xl mx-auto">
+              Find trusted professionals in your area based on neighborhood recommendations and AI-powered ranking
+            </p>
+          </div>
+        </header>
+        
+        {/* Routes */}
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/booking" element={<BookingForm />} />
+        </Routes>
+        
+        {/* Footer */}
+        <footer className="bg-gray-800 mt-12">
+          <div className="max-w-5xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+            <p className="text-center text-gray-300 text-sm">
+              {new Date().getFullYear()} Neighbourhood Pro Finder • AI-Powered Local Service Recommendations
+            </p>
+          </div>
+        </footer>
+      </div>
+    </Router>
   );
 }
 
