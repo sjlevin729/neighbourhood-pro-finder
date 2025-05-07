@@ -123,19 +123,42 @@ async def ping():
     """
     return {"status": "ok"}
 
+# Get available service types and neighbourhoods endpoint
+@app.get("/options")
+async def get_options(db: Session = Depends(get_db)):
+    """
+    Get available service types and neighbourhoods from the database.
+    
+    Returns:
+    - A list of unique service types and neighbourhoods
+    """
+    # Query unique service types
+    service_types = db.query(Provider.service_type).distinct().all()
+    service_types = [item[0] for item in service_types]
+    
+    # Query unique neighbourhoods
+    neighbourhoods = db.query(Provider.neighborhood).distinct().all()
+    neighbourhoods = [item[0] for item in neighbourhoods]
+    
+    # Return formatted response
+    return {
+        "service_types": sorted(service_types),
+        "neighbourhoods": sorted(neighbourhoods)
+    }
+
 # Recommendations endpoint
 @app.get("/recommendations")
 async def get_recommendations(
     service_type: str = Query(..., description="Type of service needed"),
-    neighborhood: str = Query(..., description="Neighborhood to search in"),
+    neighborhood: str = Query(..., description="Neighbourhood to search in"),
     db: Session = Depends(get_db)
 ):
     """
-    Get service provider recommendations based on service type and neighborhood.
+    Get service provider recommendations based on service type and neighbourhood.
     
     Parameters:
     - service_type: The type of service needed (e.g., plumber, electrician)
-    - neighborhood: The neighborhood to search in
+    - neighborhood: The neighbourhood to search in
     
     Returns:
     - A list of recommended service providers, sorted by rating (highest first)

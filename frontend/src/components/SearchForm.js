@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 /**
- * SearchForm component for collecting service type and neighborhood inputs
+ * SearchForm component for collecting service type and neighbourhood inputs
  * @param {Object} props - Component props
  * @param {string} props.service - Service type input value
  * @param {function} props.setService - Function to update service state
- * @param {string} props.neighborhood - Neighborhood input value
- * @param {function} props.setNeighborhood - Function to update neighborhood state
+ * @param {string} props.neighborhood - Neighbourhood input value
+ * @param {function} props.setNeighborhood - Function to update neighbourhood state
  * @param {boolean} props.isSearching - Whether search is in progress
  * @param {function} props.onSubmit - Form submission handler
  */
@@ -18,24 +18,72 @@ function SearchForm({
   isSearching, 
   onSubmit 
 }) {
-  // Common service types for suggestions
-  const serviceTypes = [
-    "Plumber",
-    "Electrician",
-    "Gardener",
-    "Carpenter",
-    "Painter"
-  ];
+  // State for available options from the backend
+  const [serviceTypes, setServiceTypes] = useState([]);
+  const [neighbourhoods, setNeighbourhoods] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // Common neighborhoods for suggestions
-  const neighborhoods = [
-    "Downtown",
-    "West Side",
-    "North Hills"
-  ];
+  // Fetch available options from the backend
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        setLoading(true);
+        // Get backend URL from environment variable
+        const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+        
+        // Fetch options from the backend
+        const response = await fetch(`${backendUrl}/options`);
+        
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Format service types with proper capitalization
+        const formattedServiceTypes = data.service_types.map(type => 
+          type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+        );
+        
+        // Format neighbourhoods with proper capitalization
+        const formattedNeighbourhoods = data.neighbourhoods.map(hood => 
+          hood.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+        );
+        
+        setServiceTypes(formattedServiceTypes);
+        setNeighbourhoods(formattedNeighbourhoods);
+        setError('');
+      } catch (err) {
+        console.error('Error fetching options:', err);
+        setError('Failed to load options. Using default values.');
+        // Fallback to default values if API fails
+        setServiceTypes(["Plumber", "Electrician", "Gardener", "Auto", "Handyman", "Cleaner", "Locksmith"]);
+        setNeighbourhoods(["Reading", "Downtown", "West Side", "North Hills"]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchOptions();
+  }, []);
 
   return (
     <form onSubmit={onSubmit} className="space-y-5">
+      {/* Loading indicator while fetching options */}
+      {loading && (
+        <div className="text-center py-2 text-gray-500">
+          <p>Loading available options...</p>
+        </div>
+      )}
+      
+      {/* Error message if options failed to load */}
+      {error && (
+        <div className="text-center py-2 text-red-500">
+          <p>{error}</p>
+        </div>
+      )}
+      
       {/* Service Type Input */}
       <div>
         <label 
@@ -53,22 +101,25 @@ function SearchForm({
           <input
             type="text"
             id="service"
-            placeholder="e.g. Plumber, Electrician, Gardener"
+            name="service"
             value={service}
             onChange={(e) => setService(e.target.value)}
-            className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+            className="pl-10 py-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            placeholder="e.g., Plumber, Electrician"
+            disabled={isSearching || loading}
             required
           />
         </div>
-        
-        {/* Service Type Suggestions */}
+
+        {/* Quick Selection Buttons for Service Types */}
         <div className="mt-2 flex flex-wrap gap-2">
-          {serviceTypes.map(type => (
+          {serviceTypes.map((type) => (
             <button
               key={type}
               type="button"
               onClick={() => setService(type)}
-              className="inline-flex items-center px-2.5 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors"
+              disabled={isSearching || loading}
             >
               {type}
             </button>
@@ -76,13 +127,13 @@ function SearchForm({
         </div>
       </div>
 
-      {/* Neighborhood Input */}
+      {/* Neighbourhood Input */}
       <div>
         <label 
-          htmlFor="neighborhood" 
+          htmlFor="neighbourhood" 
           className="block text-sm font-medium text-gray-700 mb-1"
         >
-          Neighborhood
+          Neighbourhood
         </label>
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -94,24 +145,27 @@ function SearchForm({
           <input
             type="text"
             id="neighborhood"
-            placeholder="e.g. Downtown, West Side, North Hills"
+            name="neighborhood"
             value={neighborhood}
             onChange={(e) => setNeighborhood(e.target.value)}
-            className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+            className="pl-10 py-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            placeholder="e.g., Reading, West Side"
+            disabled={isSearching || loading}
             required
           />
         </div>
-        
-        {/* Neighborhood Suggestions */}
-        <div className="mt-2 flex flex-wrap gap-2">
-          {neighborhoods.map(area => (
+
+        {/* Quick Selection Buttons for Neighbourhoods */}
+        <div className="mt-2 flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+          {neighbourhoods.map((hood) => (
             <button
-              key={area}
+              key={hood}
               type="button"
-              onClick={() => setNeighborhood(area)}
-              className="inline-flex items-center px-2.5 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              onClick={() => setNeighborhood(hood)}
+              className="px-3 py-1 text-xs rounded-full bg-green-100 text-green-800 hover:bg-green-200 transition-colors"
+              disabled={isSearching || loading}
             >
-              {area}
+              {hood}
             </button>
           ))}
         </div>
