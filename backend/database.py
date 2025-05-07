@@ -105,33 +105,6 @@ def create_tables():
 # Import enhanced providers from the processed dataset.json file
 from enhanced_providers import enhanced_providers
 
-# Sample data for seeding the database
-sample_providers = [
-    # Downtown providers
-    {"name": "Joe's Plumbing", "service_type": "plumber", "neighborhood": "downtown", "contact": "555-1234", "rating": 4.8},
-    {"name": "Downtown Plumbing Solutions", "service_type": "plumber", "neighborhood": "downtown", "contact": "555-5678", "rating": 4.5},
-    {"name": "Downtown Electric Co", "service_type": "electrician", "neighborhood": "downtown", "contact": "555-9876", "rating": 4.7},
-    {"name": "Spark Electricians", "service_type": "electrician", "neighborhood": "downtown", "contact": "555-4321", "rating": 4.6},
-    {"name": "Green Thumb Gardens", "service_type": "gardener", "neighborhood": "downtown", "contact": "555-2468", "rating": 4.9},
-    {"name": "Urban Oasis Landscaping", "service_type": "gardener", "neighborhood": "downtown", "contact": "555-1357", "rating": 4.4},
-    
-    # West Side providers
-    {"name": "West Side Plumbing", "service_type": "plumber", "neighborhood": "west side", "contact": "555-3698", "rating": 4.3},
-    {"name": "Pipe Masters", "service_type": "plumber", "neighborhood": "west side", "contact": "555-7412", "rating": 4.7},
-    {"name": "Westend Electrical Services", "service_type": "electrician", "neighborhood": "west side", "contact": "555-9632", "rating": 4.8},
-    {"name": "Reliable Electric", "service_type": "electrician", "neighborhood": "west side", "contact": "555-8521", "rating": 4.2},
-    {"name": "Westside Garden Pros", "service_type": "gardener", "neighborhood": "west side", "contact": "555-7539", "rating": 4.6},
-    {"name": "Sunset Landscaping", "service_type": "gardener", "neighborhood": "west side", "contact": "555-9517", "rating": 4.5},
-    
-    # North Hills providers
-    {"name": "Northside Plumbers", "service_type": "plumber", "neighborhood": "north hills", "contact": "555-1593", "rating": 4.4},
-    {"name": "Hill Top Plumbing", "service_type": "plumber", "neighborhood": "north hills", "contact": "555-7531", "rating": 4.9},
-    {"name": "North Hills Electric", "service_type": "electrician", "neighborhood": "north hills", "contact": "555-3579", "rating": 4.7},
-    {"name": "Highland Electrical", "service_type": "electrician", "neighborhood": "north hills", "contact": "555-9517", "rating": 4.5},
-    {"name": "Hilltop Gardens", "service_type": "gardener", "neighborhood": "north hills", "contact": "555-7539", "rating": 4.8},
-    {"name": "Northern Landscape Design", "service_type": "gardener", "neighborhood": "north hills", "contact": "555-1472", "rating": 4.6}
-]
-
 # Function to seed the database with sample data
 def seed_database():
     db = SessionLocal()
@@ -140,13 +113,12 @@ def seed_database():
         existing_service_types = set(row[0] for row in db.query(Provider.service_type).distinct().all())
         
         # Check if we need to add new service types
-        all_providers = enhanced_providers + sample_providers
-        new_service_types = set(provider["service_type"] for provider in all_providers)
+        new_service_types = set(provider["service_type"] for provider in enhanced_providers)
         missing_service_types = new_service_types - existing_service_types
         
         # Get existing neighborhoods
         existing_neighborhoods = set(row[0] for row in db.query(Provider.neighborhood).distinct().all())
-        new_neighborhoods = set(provider["neighborhood"] for provider in all_providers)
+        new_neighborhoods = set(provider["neighborhood"] for provider in enhanced_providers)
         missing_neighborhoods = new_neighborhoods - existing_neighborhoods
         
         # Force database refresh if we're using enhanced providers
@@ -166,22 +138,9 @@ def seed_database():
             if missing_neighborhoods:
                 print(f"Adding providers for new neighborhoods: {', '.join(missing_neighborhoods)}")
             
-            # Add enhanced providers first
+            # Add enhanced providers
             print(f"Adding {len(enhanced_providers)} enhanced providers from dataset...")
             for provider_data in enhanced_providers:
-                # Check if this exact provider already exists
-                existing = db.query(Provider).filter(
-                    Provider.name == provider_data["name"],
-                    Provider.service_type == provider_data["service_type"]
-                ).first()
-                
-                if not existing:
-                    provider = Provider(**provider_data)
-                    db.add(provider)
-            
-            # Add sample providers for other neighborhoods
-            print(f"Adding {len(sample_providers)} sample providers for other neighborhoods...")
-            for provider_data in sample_providers:
                 # Check if this exact provider already exists
                 existing = db.query(Provider).filter(
                     Provider.name == provider_data["name"],
