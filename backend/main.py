@@ -1,6 +1,7 @@
 import os
 from fastapi import FastAPI, Query, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from typing import List, Dict, Optional
 from sqlalchemy.orm import Session
 
@@ -33,6 +34,85 @@ async def startup_event():
     create_tables()
     seed_database()
     print("Database initialization complete")
+
+# Root endpoint to provide API documentation
+@app.get("/", response_class=HTMLResponse)
+async def root():
+    """
+    Root endpoint that provides information about the API.
+    """
+    html_content = """
+    <!DOCTYPE html>
+    <html>
+        <head>
+            <title>Neighbourhood Pro Finder API</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    max-width: 800px;
+                    margin: 0 auto;
+                    padding: 20px;
+                    line-height: 1.6;
+                }
+                h1 {
+                    color: #2c3e50;
+                    border-bottom: 1px solid #eee;
+                    padding-bottom: 10px;
+                }
+                h2 {
+                    color: #3498db;
+                    margin-top: 30px;
+                }
+                code {
+                    background-color: #f8f9fa;
+                    padding: 2px 5px;
+                    border-radius: 3px;
+                    font-family: monospace;
+                }
+                .endpoint {
+                    background-color: #f8f9fa;
+                    padding: 15px;
+                    border-radius: 5px;
+                    margin-bottom: 15px;
+                }
+                .method {
+                    font-weight: bold;
+                    color: #27ae60;
+                }
+            </style>
+        </head>
+        <body>
+            <h1>Neighbourhood Pro Finder API</h1>
+            <p>Welcome to the Neighbourhood Pro Finder API. This API provides service provider recommendations based on service type and neighborhood.</p>
+            
+            <h2>Available Endpoints</h2>
+            
+            <div class="endpoint">
+                <p><span class="method">GET</span> <code>/ping</code></p>
+                <p>Health check endpoint to verify the API is running.</p>
+                <p>Example: <code>/ping</code></p>
+            </div>
+            
+            <div class="endpoint">
+                <p><span class="method">GET</span> <code>/recommendations</code></p>
+                <p>Get service provider recommendations based on service type and neighborhood.</p>
+                <p>Required query parameters:</p>
+                <ul>
+                    <li><code>service_type</code>: The type of service needed (e.g., plumber, electrician)</li>
+                    <li><code>neighborhood</code>: The neighborhood to search in</li>
+                </ul>
+                <p>Example: <code>/recommendations?service_type=plumber&neighborhood=downtown</code></p>
+            </div>
+            
+            <h2>API Documentation</h2>
+            <p>For detailed API documentation, visit <a href="/docs">/docs</a>.</p>
+            
+            <h2>Frontend Application</h2>
+            <p>The frontend application for Neighbourhood Pro Finder should be available at a separate URL provided by your deployment service.</p>
+        </body>
+    </html>
+    """
+    return html_content
 
 # Sample endpoint to verify the server works
 @app.get("/ping")
