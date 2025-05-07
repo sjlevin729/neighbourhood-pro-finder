@@ -131,6 +131,12 @@ def seed_database():
                 # Clear existing providers
                 db.query(Provider).delete()
                 db.commit()
+            else:
+                # Remove any providers with 'unknown' or invalid neighborhoods
+                unknown_count = db.query(Provider).filter(Provider.neighborhood.in_(["unknown", "nightclub!"])).delete()
+                if unknown_count > 0:
+                    print(f"Removed {unknown_count} existing providers with 'unknown' or invalid neighborhoods")
+                    db.commit()
             
             if missing_service_types:
                 print(f"Adding providers for new service types: {', '.join(missing_service_types)}")
@@ -138,9 +144,10 @@ def seed_database():
             if missing_neighborhoods:
                 print(f"Adding providers for new neighborhoods: {', '.join(missing_neighborhoods)}")
             
-            # Add enhanced providers
-            print(f"Adding {len(enhanced_providers)} enhanced providers from dataset...")
-            for provider_data in enhanced_providers:
+            # Add enhanced providers (excluding those with 'unknown' or invalid neighborhoods)
+            filtered_providers = [p for p in enhanced_providers if p["neighborhood"] != "unknown" and p["neighborhood"] != "nightclub!"]
+            print(f"Adding {len(filtered_providers)} enhanced providers from dataset (excluded {len(enhanced_providers) - len(filtered_providers)} with unknown or invalid neighborhoods)...")
+            for provider_data in filtered_providers:
                 # Check if this exact provider already exists
                 existing = db.query(Provider).filter(
                     Provider.name == provider_data["name"],
